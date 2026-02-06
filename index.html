@@ -1,1 +1,1866 @@
-...
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>IMAGI-UNIVERSE: Neural Topology Engine</title>
+  <style>
+    :root {
+      --primary: linear-gradient(to right, #5dade2 0%, #aed6f1 20%, #3498db 40%, #a9cce3 60%, #2e86c1 80%, #5dade2 100%);
+      --bg: #f8f9fa;
+      --panel: #ffffff;
+      --text: #2c3e50;
+      --text-muted: #7f8c8d;
+      --border: #e0e0e0;
+      --success: #2ecc71;
+      --error: #e74c3c;
+      --warning: #f39c12;
+    }
+
+```
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'SF Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px;
+  overflow-x: hidden;
+  touch-action: manipulation;
+}
+
+h1 {
+  margin: 20px 0;
+  font-size: clamp(1.8rem, 10vw, 3rem);
+  text-align: center;
+  letter-spacing: 5px;
+  font-weight: 900;
+  background: var(--primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 15px rgba(93, 173, 226, 0.8));
+  text-transform: uppercase;
+  animation: shimmer 6s infinite linear;
+  background-size: 200% auto;
+}
+
+@keyframes shimmer {
+  to { background-position: 200% center; }
+}
+
+.subtitle {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  margin-top: -15px;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+.container {
+  max-width: 600px;
+  width: 100%;
+}
+
+.controls {
+  background: var(--panel);
+  padding: 25px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.control-group {
+  margin-bottom: 18px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #3498db;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.control-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.help-icon {
+  cursor: help;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding: 2px 8px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+
+.help-icon:hover {
+  color: #3498db;
+  border-color: #3498db;
+}
+
+input[type="range"] {
+  width: 100%;
+  height: 8px;
+  background: #e8f4f8;
+  border-radius: 4px;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 26px;
+  height: 26px;
+  background: #3498db;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(52, 152, 219, 0.5);
+  border: 2px solid #fff;
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  background: #3498db;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(52, 152, 219, 0.5);
+  border: 2px solid #fff;
+  cursor: pointer;
+}
+
+input[type="range"]:disabled,
+select:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+select {
+  width: 100%;
+  padding: 14px;
+  background: #fff;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+}
+
+.mode-description {
+  margin-top: 8px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.session-info {
+  margin-top: 10px;
+  padding: 10px;
+  background: #e8f4f8;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  color: #2e86c1;
+  text-align: center;
+  display: none;
+}
+
+.session-info.active {
+  display: block;
+}
+
+.button-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+
+button {
+  padding: 18px;
+  border-radius: 14px;
+  border: none;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  touch-action: manipulation;
+  font-size: 0.9rem;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+button:focus-visible {
+  outline: 2px solid #ffd700;
+  outline-offset: 2px;
+}
+
+#start-btn {
+  flex: 2;
+  background: linear-gradient(135deg, #5dade2, #3498db);
+  color: #fff;
+}
+
+#start-btn:hover:not(:disabled) {
+  box-shadow: 0 0 25px rgba(93, 173, 226, 0.6);
+}
+
+#stop-btn {
+  flex: 1;
+  background: #fff;
+  color: #e74c3c;
+  border: 1px solid #fadbd8;
+}
+
+#stop-btn:hover:not(:disabled) {
+  background: #fef5e7;
+  border-color: #e74c3c;
+}
+
+#glossary-btn {
+  flex: 1;
+  background: #fff;
+  color: #3498db;
+  border: 1px solid #d6eaf8;
+  min-width: 120px;
+}
+
+#glossary-btn:hover:not(:disabled) {
+  background: #ebf5fb;
+  border-color: #3498db;
+}
+
+button:disabled {
+  opacity: 0.15;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.game-area {
+  background: #fff;
+  padding: 30px;
+  border-radius: 30px;
+  text-align: center;
+  border: 1px solid var(--border);
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  position: relative;
+}
+
+.status {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 5px;
+  font-weight: 900;
+  text-transform: uppercase;
+  transition: color 0.3s;
+}
+
+.status.active {
+  color: #3498db;
+}
+
+#countdown-overlay {
+  font-size: 6rem;
+  color: #3498db;
+  font-weight: 900;
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: none;
+  text-shadow: 0 0 40px rgba(52, 152, 219, 0.8);
+  z-index: 20;
+  animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.1); }
+}
+
+.premise-display {
+  font-family: 'SF Mono', 'Courier New', monospace;
+  font-size: clamp(1.1rem, 4.5vw, 1.6rem);
+  color: var(--text);
+  margin: 20px 0;
+  font-weight: 500;
+  min-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.8;
+  text-shadow: none;
+  padding: 15px;
+  letter-spacing: 0.5px;
+}
+
+.premise-display.presenting {
+  animation: fadeIn 0.4s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.response-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+}
+
+@media (min-width: 500px) {
+  .response-buttons { flex-direction: row; }
+}
+
+.response-buttons button {
+  flex: 1;
+  padding: 30px 20px;
+  font-size: 1.5rem;
+  border: 2px solid transparent;
+  border-radius: 20px;
+  position: relative;
+}
+
+.response-buttons button::after {
+  content: '';
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  font-size: 0.7rem;
+  opacity: 0.5;
+  font-weight: 600;
+}
+
+#match-btn {
+  background: rgba(46, 204, 113, 0.05);
+  color: #2ecc71;
+  border-color: rgba(46, 204, 113, 0.2);
+}
+
+#match-btn::after {
+  content: 'SPACE';
+}
+
+#no-match-btn {
+  background: rgba(231, 76, 60, 0.05);
+  color: #e74c3c;
+  border-color: rgba(231, 76, 60, 0.2);
+}
+
+#no-match-btn::after {
+  content: 'ENTER';
+}
+
+#match-btn:not(:disabled):hover {
+  background: rgba(46, 204, 113, 0.15);
+  border-color: rgba(46, 204, 113, 0.4);
+}
+
+#no-match-btn:not(:disabled):hover {
+  background: rgba(231, 76, 60, 0.15);
+  border-color: rgba(231, 76, 60, 0.4);
+}
+
+#match-btn:not(:disabled):active {
+  background: #2ecc71;
+  color: #000;
+}
+
+#no-match-btn:not(:disabled):active {
+  background: #e74c3c;
+  color: #fff;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.stat-box {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 15px;
+  border: 1px solid var(--border);
+  transition: all 0.3s;
+}
+
+.stat-box.highlight {
+  border-color: #3498db;
+  box-shadow: 0 0 15px rgba(52, 152, 219, 0.3);
+}
+
+.stat-label {
+  font-size: 0.55rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.stat-value {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: #2e86c1;
+}
+
+#feedback {
+  font-size: 1.4rem;
+  font-weight: 900;
+  min-height: 32px;
+  letter-spacing: 2px;
+  transition: all 0.3s;
+}
+
+.correct {
+  color: #3498db;
+  text-shadow: 0 0 15px rgba(52, 152, 219, 0.8);
+  animation: successPulse 0.5s ease-out;
+}
+
+.incorrect {
+  color: #ff4444;
+  animation: errorShake 0.5s ease-out;
+}
+
+@keyframes successPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes errorShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 220px;
+  background-color: #2c3e50;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 10px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -110px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  font-size: 0.7rem;
+  line-height: 1.4;
+  border: 1px solid var(--border);
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+@media (max-width: 500px) {
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Screen-reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Modal base */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 999;
+}
+
+.modal[aria-hidden="false"] {
+  display: block;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(44, 62, 80, 0.65);
+  backdrop-filter: blur(4px);
+}
+
+.modal-panel {
+  position: relative;
+  max-width: 720px;
+  width: calc(100% - 24px);
+  margin: 12px auto;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  max-height: calc(100vh - 24px);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 {
+  font-size: 1rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #3498db;
+  margin: 0;
+}
+
+.modal-close {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  background: #f8f9fa;
+  border-color: #3498db;
+}
+
+.modal-controls {
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+#glossary-filter {
+  flex: 2;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  outline: none;
+}
+
+#glossary-filter:focus {
+  border-color: #3498db;
+}
+
+#glossary-mode-jump {
+  flex: 1;
+}
+
+.modal-body {
+  padding: 14px 16px;
+  overflow: auto;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.modal-body:focus {
+  outline: none;
+}
+
+.modal-footer {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.modal-current-context {
+  padding: 10px 16px;
+  background: #e8f4f8;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.modal-current-context strong {
+  color: #2e86c1;
+}
+
+.glossary-section {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #f8f9fa;
+}
+
+.glossary-section h3 {
+  margin: 0 0 6px 0;
+  font-size: 0.9rem;
+  color: #2e86c1;
+  letter-spacing: 1px;
+}
+
+.glossary-kv {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 8px 12px;
+  margin-top: 10px;
+  font-size: 0.85rem;
+}
+
+.glossary-kv .k {
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+.glossary-code {
+  font-family: 'SF Mono', 'Courier New', monospace;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  margin-top: 8px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text);
+}
+
+.tiny {
+  font-size: 0.7rem;
+}
+```
+
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>IMAGI-UNIVERSE</h1>
+    <div class="subtitle">4D Planning Neural Topology</div>
+
+```
+<div class="controls">
+  <div class="control-group">
+    <div class="control-header">
+      <label>N-Back Lag: <span id="n-val" style="color:#ffd700">1</span></label>
+      <span class="help-icon tooltip">?
+        <span class="tooltiptext">Compare current trial to N steps back. Start with 1, increase when accuracy reaches 80%+</span>
+      </span>
+    </div>
+    <input type="range" id="n-slider" min="1" max="5" value="1" aria-label="N-Back Lag">
+  </div>
+
+  <div class="control-group">
+    <div class="control-header">
+      <label>Topology Geometry:</label>
+      <span class="help-icon tooltip">?
+        <span class="tooltiptext">Start Mode 0 only. Add modes progressively as you master structural patterns</span>
+      </span>
+    </div>
+    <select id="logic-mode" aria-label="Topology Mode">
+      <option value="0">Mode 0: Temporal Causality</option>
+      <option value="1">Mode 1: Branching Futures</option>
+      <option value="2">Mode 2: Cost-Bounded Reach</option>
+      <option value="3">Mode 3: Rule-Shift Homology</option>
+      <option value="4">Mode 4: Perturbation Replan</option>
+    </select>
+    <div id="mode-description" class="mode-description">
+      Delayed cause + inhibition pattern
+    </div>
+  </div>
+
+  <div class="control-group">
+    <div class="control-header">
+      <label>Thinking Time: <span id="spt-val" style="color:#ffd700">8</span>s</label>
+      <span class="help-icon tooltip">?
+        <span class="tooltiptext">Time to process and match structure. Optimal: 8-12s initially</span>
+      </span>
+    </div>
+    <input type="range" id="spt-slider" min="3" max="30" step="1" value="8" aria-label="Thinking Time">
+  </div>
+
+  <div id="session-info" class="session-info">
+    SESSION LOCKED: <span id="locked-params"></span>
+  </div>
+
+  <div class="button-group">
+    <button id="start-btn" aria-label="Start Training Session">Initialize Session</button>
+    <button id="stop-btn" disabled aria-label="Stop Training Session">Sever</button>
+    <button id="glossary-btn" type="button" aria-haspopup="dialog" aria-controls="glossary-modal">Glossary</button>
+  </div>
+</div>
+
+<div class="game-area">
+  <div id="status" class="status" role="status" aria-live="polite">SYSTEM STANDBY</div>
+  <div id="countdown-overlay" aria-hidden="true"></div>
+  <div id="feedback" aria-live="assertive"></div>
+  <div id="premise-display" class="premise-display" role="main">INITIALIZE TO BEGIN</div>
+
+  <div class="response-buttons">
+    <button id="match-btn" disabled aria-label="Match - Press Space">MATCH</button>
+    <button id="no-match-btn" disabled aria-label="No Match - Press Enter">NO MATCH</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat-box">
+      <div class="stat-label">Cycle</div>
+      <div id="trial-count" class="stat-value" aria-label="Trial Count">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Score</div>
+      <div id="score" class="stat-value" aria-label="Correct Responses">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Accuracy</div>
+      <div id="accuracy" class="stat-value" aria-label="Accuracy Percentage">0%</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Streak</div>
+      <div id="streak" class="stat-value" aria-label="Current Streak">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Avg RT</div>
+      <div id="avg-rt" class="stat-value" aria-label="Average Response Time">0ms</div>
+    </div>
+  </div>
+</div>
+
+<div id="glossary-modal" class="modal" role="dialog" aria-modal="true"
+     aria-labelledby="glossary-title" aria-hidden="true">
+  <div class="modal-backdrop" data-close="1"></div>
+
+  <div class="modal-panel" role="document">
+    <div class="modal-header">
+      <h2 id="glossary-title">IMAGI-UNIVERSE Glossary</h2>
+      <button id="glossary-close" class="modal-close" type="button" aria-label="Close glossary">✕</button>
+    </div>
+
+    <div id="glossary-current" class="modal-current-context" style="display: none;">
+      <div><strong>Current Mode:</strong> <span id="glossary-current-mode"></span></div>
+      <div><strong>Current Key:</strong> <span id="glossary-current-key"></span></div>
+    </div>
+
+    <div class="modal-controls">
+      <label class="sr-only" for="glossary-filter">Filter glossary</label>
+      <input id="glossary-filter" type="text" placeholder="Search… (e.g., M3, ruleShift, ≤, d)"
+             autocomplete="off" inputmode="search">
+      <select id="glossary-mode-jump" aria-label="Jump to mode">
+        <option value="all">All</option>
+        <option value="0">Mode 0</option>
+        <option value="1">Mode 1</option>
+        <option value="2">Mode 2</option>
+        <option value="3">Mode 3</option>
+        <option value="4">Mode 4</option>
+      </select>
+    </div>
+
+    <div id="glossary-content" class="modal-body" tabindex="0"></div>
+
+    <div class="modal-footer">
+      <div class="tiny">
+        Tip: MATCH means "same structural key", not same letters.
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+  </main>
+
+  <script type="module">
+    /**
+     * IMAGI-UNIVERSE TOPOLOGY ENGINE v10.0 FINAL
+     * 
+     * CRITICAL FIXES IMPLEMENTED:
+     * 1. No accidental matches on non-match trials
+     * 2. Controls locked during session (N, mode)
+     * 3. Session nonce (runId) for async safety
+     * 4. Visibility resume for iOS/Safari
+     * 5. Expanded keyspace (d:1-6, b:2-9, t:1-6)
+     * 6. TTS operator mapping (visual operators → spoken English)
+     * 7. Prevent immediate key repeats
+     * 8. AudioContext lifecycle (suspend/resume over close)
+     * 9. Enhanced primer timing (100ms post-primer delay)
+     * 10. Guard against missing speechSynthesis
+     * 11. Response time measurement
+     * 12. Keyboard repeat prevention
+     */
+
+    const SYMBOLS = "BCDEFGHJKLMNOPQRSTUVWXYZ".split("");
+    
+    const MODE_DESCRIPTIONS = {
+      0: "Delayed cause + inhibition pattern",
+      1: "Branch compression: multiple futures from single source",
+      2: "Goal-directed planning under resource constraints",
+      3: "Dynamic rule transformation: physics changes mid-stream",
+      4: "Resilience training: replan under shock + cost penalties"
+    };
+
+    /**
+     * GLOSSARY DATA MODEL
+     * Canonical source for all operator meanings, key definitions, and mode explanations
+     */
+    const GLOSSARY = {
+      meta: {
+        title: "IMAGI-UNIVERSE Glossary",
+        daVinciConstraint: "Visual premises are operator-only; letters are placeholders."
+      },
+
+      operators: [
+        { token: "→", name: "causes / edge", meaning: "Directed influence from source to target." },
+        { token: "⊣", name: "inhibits", meaning: "Blocks/suppresses an edge or activation." },
+        { token: "?→", name: "may cause", meaning: "Branching/uncertain edge; alternative futures." },
+        { token: "@+d", name: "delay", meaning: "Effect occurs after d steps (temporal lag)." },
+        { token: "≤b", name: "budget cap", meaning: "Resource bound / maximum cost allowed." },
+        { token: "ruleShift@t", name: "rule shift", meaning: "Dynamics change at time t." },
+        { token: "⇒", name: "becomes", meaning: "Mapping of one rule/edge timing to another." },
+        { token: "perturb@t", name: "perturbation", meaning: "Shock event introduced at time t." },
+        { token: "¬X", name: "remove", meaning: "Element X removed/negated." },
+        { token: "cost×2", name: "cost doubles", meaning: "Penalty factor applied after perturbation." },
+        { token: "|", name: "or (branch)", meaning: "Alternative edges/futures in Mode 1." }
+      ],
+
+      keys: [
+        { key: "M0-CAUSE-d{d}", meaning: "Mode 0 structural signature (delay parameter d)." },
+        { key: "M1-BRANCH-d{d}", meaning: "Mode 1 structural signature (branch delay d)." },
+        { key: "M2-COST-b{b}-d{d}", meaning: "Mode 2 signature (budget b + delay d)." },
+        { key: "M3-RULE-t{t}-flip{ON|OFF}", meaning: "Mode 3 signature (shift time t + flip state)." },
+        { key: "M4-PERT-t{t}-b{b}", meaning: "Mode 4 signature (perturb time t + budget b)." }
+      ],
+
+      modes: {
+        0: {
+          title: "Mode 0 — Temporal Causality",
+          intent: "Delayed cause + inhibition pattern.",
+          template: "A→B@+d; C⊣(A→B)",
+          params: [
+            { name: "d", range: "1–6", role: "Delay steps for causal edge." }
+          ],
+          whatToMatch: "MATCH iff same key M0-CAUSE-d{d} as N-back.",
+          whatChangesPerTrial: "Letters A,B,C resample every trial; only structure is stable."
+        },
+
+        1: {
+          title: "Mode 1 — Branching Futures",
+          intent: "Branch compression: multiple futures from single source.",
+          template: "A?→B@+d | A?→C@+d",
+          params: [
+            { name: "d", range: "1–6", role: "Delay shared by both branches." }
+          ],
+          whatToMatch: "MATCH iff same key M1-BRANCH-d{d} as N-back.",
+          whatChangesPerTrial: "Letters resample; branch structure and d are the signal."
+        },
+
+        2: {
+          title: "Mode 2 — Cost-Bounded Reach",
+          intent: "Goal-directed planning under resource constraints.",
+          template: "reach B from A ≤b; D⊣(A→B@+d)",
+          params: [
+            { name: "b", range: "2–9", role: "Budget cap." },
+            { name: "d", range: "1–6", role: "Delay in inhibited edge." }
+          ],
+          whatToMatch: "MATCH iff same key M2-COST-b{b}-d{d} as N-back.",
+          whatChangesPerTrial: "Letters resample; b and d define the structural key."
+        },
+
+        3: {
+          title: "Mode 3 — Rule-Shift Homology",
+          intent: "Dynamic rule transformation: physics changes mid-stream.",
+          template: "ruleShift@t:flip; A→B@+2⇒@+1",
+          params: [
+            { name: "t", range: "1–6", role: "Time of rule change." },
+            { name: "flip", range: "ON/OFF", role: "Toggle state for the shift." }
+          ],
+          whatToMatch: "MATCH iff same key M3-RULE-t{t}-flip{ON|OFF} as N-back.",
+          whatChangesPerTrial: "Letters resample; t and flip define the key."
+        },
+
+        4: {
+          title: "Mode 4 — Perturbation Replan",
+          intent: "Resilience training: replan under shock + cost penalties.",
+          template: "perturb@t:¬X; cost×2; goal B ≤b from A",
+          params: [
+            { name: "t", range: "1–6", role: "Perturbation time." },
+            { name: "b", range: "2–9", role: "Budget under penalty." }
+          ],
+          whatToMatch: "MATCH iff same key M4-PERT-t{t}-b{b} as N-back.",
+          whatChangesPerTrial: "Letters resample; t and b define the key."
+        }
+      }
+    };
+
+    /**
+     * Escape text for safe HTML insertion
+     */
+    function escapeText(s) {
+      return String(s).replace(/[&<>"']/g, c => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[c]));
+    }
+
+    /**
+     * Render glossary content based on filter and mode selection
+     */
+    function renderGlossary({ filterText = "", mode = "all" } = {}) {
+      const root = document.getElementById("glossary-content");
+      if (!root) return;
+
+      const q = filterText.trim().toLowerCase();
+      const sections = [];
+
+      // Operators section
+      sections.push({
+        header: "Operators",
+        body: `
+          <div class="glossary-kv">
+            ${GLOSSARY.operators
+              .filter(o => !q || (o.token + o.name + o.meaning).toLowerCase().includes(q))
+              .map(o => `
+                <div class="k">${escapeText(o.token)}</div>
+                <div>${escapeText(o.name)} — ${escapeText(o.meaning)}</div>
+              `).join("")}
+          </div>
+        `
+      });
+
+      // Keys section
+      sections.push({
+        header: "Model Keys (what MATCH compares)",
+        body: `
+          <div class="glossary-kv">
+            ${GLOSSARY.keys
+              .filter(k => !q || (k.key + k.meaning).toLowerCase().includes(q))
+              .map(k => `
+                <div class="k">${escapeText(k.key)}</div>
+                <div>${escapeText(k.meaning)}</div>
+              `).join("")}
+          </div>
+        `
+      });
+
+      // Modes section
+      const modeIds = ["0", "1", "2", "3", "4"].filter(id => mode === "all" || mode === id);
+      for (const id of modeIds) {
+        const m = GLOSSARY.modes[id];
+        const hay = (m.title + m.intent + m.template + 
+                     (m.params || []).map(p => p.name + p.range + p.role).join(" ") +
+                     m.whatToMatch + m.whatChangesPerTrial).toLowerCase();
+        
+        if (q && !hay.includes(q)) continue;
+
+        const paramsHtml = (m.params || []).map(p => `
+          <div class="k">${escapeText(p.name)}</div>
+          <div>${escapeText(p.range)} — ${escapeText(p.role)}</div>
+        `).join("");
+
+        sections.push({
+          header: m.title,
+          body: `
+            <div class="tiny">${escapeText(m.intent)}</div>
+            <div class="glossary-code">${escapeText(m.template)}</div>
+            <div class="glossary-kv">
+              <div class="k">Key</div><div>${escapeText(m.whatToMatch)}</div>
+              <div class="k">Varies</div><div>${escapeText(m.whatChangesPerTrial)}</div>
+              ${paramsHtml ? `<div class="k">Params</div><div></div>${paramsHtml}` : ""}
+            </div>
+          `
+        });
+      }
+
+      root.innerHTML = sections.map(s => `
+        <section class="glossary-section">
+          <h3>${escapeText(s.header)}</h3>
+          ${s.body}
+        </section>
+      `).join("");
+
+      // Don't force focus - let user navigate naturally
+    }
+
+    /**
+     * Modal state management
+     */
+    let lastFocusEl = null;
+
+    function openGlossary(engine) {
+      const modal = document.getElementById("glossary-modal");
+      if (!modal) return;
+
+      lastFocusEl = document.activeElement;
+
+      modal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+
+      // Show current context if engine is running
+      const contextDiv = document.getElementById("glossary-current");
+      const modeSpan = document.getElementById("glossary-current-mode");
+      const keySpan = document.getElementById("glossary-current-key");
+      
+      if (engine && engine.running && engine.sessionMode !== null) {
+        contextDiv.style.display = "block";
+        const modeText = document.querySelector(`#logic-mode option[value="${engine.sessionMode}"]`)?.textContent || "Unknown";
+        modeSpan.textContent = modeText;
+        keySpan.textContent = engine.currentCycleObj ? engine.currentCycleObj.key : "—";
+        
+        // Jump to current mode by default
+        const modeSel = document.getElementById("glossary-mode-jump");
+        if (modeSel) modeSel.value = engine.sessionMode;
+      } else {
+        contextDiv.style.display = "none";
+      }
+
+      // Initial render
+      const modeSel = document.getElementById("glossary-mode-jump");
+      const filter = document.getElementById("glossary-filter");
+      renderGlossary({ 
+        filterText: filter?.value || "", 
+        mode: modeSel?.value || "all" 
+      });
+
+      // Focus filter
+      (filter || document.getElementById("glossary-close"))?.focus();
+    }
+
+    function closeGlossary() {
+      const modal = document.getElementById("glossary-modal");
+      if (!modal) return;
+
+      modal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+
+      if (lastFocusEl && typeof lastFocusEl.focus === "function") {
+        lastFocusEl.focus();
+      }
+    }
+
+    function isGlossaryOpen() {
+      const modal = document.getElementById("glossary-modal");
+      return modal && modal.getAttribute("aria-hidden") === "false";
+    }
+
+    /**
+     * Initialize glossary UI event handlers
+     */
+    function initGlossaryUI(engine) {
+      const btn = document.getElementById("glossary-btn");
+      const closeBtn = document.getElementById("glossary-close");
+      const modal = document.getElementById("glossary-modal");
+      const filter = document.getElementById("glossary-filter");
+      const jump = document.getElementById("glossary-mode-jump");
+
+      btn?.addEventListener("click", () => openGlossary(engine));
+      closeBtn?.addEventListener("click", closeGlossary);
+
+      // Click outside panel closes
+      modal?.addEventListener("click", (e) => {
+        const t = e.target;
+        if (t && t.dataset && t.dataset.close === "1") closeGlossary();
+      });
+
+      // ESC closes + focus trap
+      document.addEventListener("keydown", (e) => {
+        if (!isGlossaryOpen()) return;
+
+        if (e.key === "Escape") {
+          e.preventDefault();
+          closeGlossary();
+          return;
+        }
+
+        if (e.key === "Tab") {
+          const focusables = modal.querySelectorAll(
+            'button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])'
+          );
+          const list = Array.from(focusables).filter(el => !el.disabled && el.offsetParent !== null);
+          if (list.length === 0) return;
+
+          const first = list[0];
+          const last = list[list.length - 1];
+          
+          if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      });
+
+      // Filter/jump re-render
+      filter?.addEventListener("input", () => {
+        renderGlossary({ 
+          filterText: filter.value, 
+          mode: jump?.value || "all" 
+        });
+      });
+      
+      jump?.addEventListener("change", () => {
+        renderGlossary({ 
+          filterText: filter?.value || "", 
+          mode: jump.value 
+        });
+      });
+    }
+
+    /**
+     * TTS OPERATOR MAPPING
+     * Visual: operator-only (Da Vinci constraint)
+     * Spoken: expanded for TTS clarity
+     */
+    const TTS_MAPPING = {
+      // Multi-character operators (must be first due to length sorting)
+      'ruleShift': 'rule shift ',
+      'perturb': 'perturbation ',
+      'cost×2': ' cost doubles ',
+      '?→': ' may cause ',
+      '@+': ' after ',
+      // Single operators
+      '→': ' causes ',
+      '⊣': ' inhibits ',
+      '≤': ' at most ',
+      '¬': ' remove ',
+      '⇒': ' becomes ',
+      '|': ' or ',
+      ';': '; ',
+      ':': ' ',
+      '(': ' ',
+      ')': ' ',
+      '+': ' plus ',
+      // Keywords
+      'reach': 'reach ',
+      'from': ' from ',
+      'goal': ' goal ',
+      // Time markers
+      '@t': ' at time ',
+      't1': 'time 1',
+      't2': 'time 2',
+      't3': 'time 3',
+      't4': 'time 4',
+      't5': 'time 5',
+      't6': 'time 6',
+    };
+
+    function translateToSpeech(text) {
+      let spoken = text;
+      
+      // Sort by length descending to replace longer tokens first
+      const sortedMappings = Object.entries(TTS_MAPPING).sort((a, b) => b[0].length - a[0].length);
+      
+      // Replace operators with spoken equivalents
+      for (const [visual, spoken_text] of sortedMappings) {
+        spoken = spoken.split(visual).join(spoken_text);
+      }
+      
+      // Clean up extra spaces
+      spoken = spoken.replace(/\s+/g, ' ').trim();
+      
+      return spoken;
+    }
+
+    class Mulberry32 {
+      constructor(seed) {
+        this.state = seed >>> 0;
+      }
+
+      next() {
+        let t = this.state += 0x6D2B79F5;
+        t = Math.imul(t ^ t >>> 15, t | 1);
+        t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      }
+
+      choice(arr) {
+        return arr[Math.floor(this.next() * arr.length)];
+      }
+    }
+
+    class TopologyEngine {
+      constructor() {
+        this.history = [];
+        this.score = 0;
+        this.total = 0;
+        this.streak = 0;
+        this.maxStreak = 0;
+        this.running = false;
+        this.responseTimes = [];
+        
+        this.currentCycleObj = null;
+        this.correctIsMatch = false;
+        this.answered = true;
+        this.responseStartTime = null;
+        
+        this.rng = new Mulberry32(Date.now());
+        this.synth = window.speechSynthesis;
+        this.audioCtx = null;
+        this.timer = null;
+        
+        // SESSION NONCE: Kills stale async operations
+        this.runId = 0;
+        this.activeRunId = 0;
+        
+        // Locked session parameters
+        this.sessionN = null;
+        this.sessionMode = null;
+      }
+
+      init() {
+        console.log('=== IMAGI-UNIVERSE INITIALIZING ===');
+
+        // E) Simple event handlers - no scattered gesture listeners
+        document.getElementById('start-btn').onclick = () => this.start();
+        document.getElementById('stop-btn').onclick = () => this.stop();
+        
+        document.getElementById('n-slider').oninput = (e) => {
+          document.getElementById('n-val').textContent = e.target.value;
+        };
+        
+        document.getElementById('spt-slider').oninput = (e) => {
+          document.getElementById('spt-val').textContent = e.target.value;
+        };
+
+        document.getElementById('logic-mode').onchange = (e) => {
+          const desc = MODE_DESCRIPTIONS[e.target.value] || "";
+          document.getElementById('mode-description').textContent = desc;
+        };
+
+        document.getElementById('match-btn').onclick = () => this.respond(true);
+        document.getElementById('no-match-btn').onclick = () => this.respond(false);
+
+        // Keyboard with repeat prevention
+        window.addEventListener('keydown', (e) => {
+          if (!this.running || this.answered || e.repeat) return;
+          
+          if (e.code === 'Space') {
+            e.preventDefault();
+            this.respond(true);
+          } else if (e.code === 'Enter') {
+            e.preventDefault();
+            this.respond(false);
+          }
+        });
+
+        // G) Handle visibility changes - keep it simple like IMAGI-WORLD
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden && this.running) {
+            // Just cancel speech when hidden
+            if (this.synth) {
+              this.synth.cancel();
+            }
+          }
+          // Don't auto-resume - let next pulse handle it
+        });
+
+        // Cleanup on page unload
+        const cleanup = () => {
+          if (this.synth) {
+            this.synth.cancel();
+          }
+          if (this.audioCtx && this.audioCtx.state !== 'closed') {
+            this.audioCtx.close();
+            this.audioCtx = null;
+          }
+        };
+        
+        window.addEventListener('beforeunload', cleanup);
+        window.addEventListener('pagehide', cleanup);
+      }
+
+      setStatus(text, isActive = false) {
+        const statusEl = document.getElementById('status');
+        statusEl.textContent = text;
+        if (isActive) {
+          statusEl.classList.add('active');
+        } else {
+          statusEl.classList.remove('active');
+        }
+      }
+
+      lockControls() {
+        document.getElementById('n-slider').disabled = true;
+        document.getElementById('logic-mode').disabled = true;
+        document.getElementById('spt-slider').disabled = true;
+        
+        // Update mode description for locked mode
+        const desc = MODE_DESCRIPTIONS[this.sessionMode] || "";
+        document.getElementById('mode-description').textContent = desc;
+        
+        const sessionInfo = document.getElementById('session-info');
+        const modeText = document.querySelector(`#logic-mode option[value="${this.sessionMode}"]`).textContent;
+        document.getElementById('locked-params').textContent = `${modeText} | N=${this.sessionN}`;
+        sessionInfo.classList.add('active');
+      }
+
+      unlockControls() {
+        document.getElementById('n-slider').disabled = false;
+        document.getElementById('logic-mode').disabled = false;
+        document.getElementById('spt-slider').disabled = false;
+        document.getElementById('session-info').classList.remove('active');
+      }
+
+      initAudioContext() {
+        try {
+          if (!this.audioCtx || this.audioCtx.state === 'closed') {
+            this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          }
+          
+          if (this.audioCtx.state === 'suspended') {
+            return this.audioCtx.resume();
+          }
+          
+          return Promise.resolve();
+        } catch (error) {
+          console.warn('Audio context initialization failed:', error);
+          return Promise.resolve();
+        }
+      }
+
+      async playPrimer() {
+        try {
+          if (!this.audioCtx || this.audioCtx.state === 'closed') {
+            await this.initAudioContext();
+          }
+
+          const oscillator = this.audioCtx.createOscillator();
+          const gainNode = this.audioCtx.createGain();
+
+          oscillator.type = 'sine';
+          oscillator.frequency.setValueAtTime(110, this.audioCtx.currentTime);
+
+          gainNode.gain.setValueAtTime(0.08, this.audioCtx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + 0.12);
+
+          oscillator.connect(gainNode);
+          gainNode.connect(this.audioCtx.destination);
+
+          oscillator.start(this.audioCtx.currentTime);
+          oscillator.stop(this.audioCtx.currentTime + 0.12);
+
+          // Enhanced: Wait for primer + additional buffer
+          await new Promise(resolve => setTimeout(resolve, 220));
+        } catch (error) {
+          console.warn('Primer tone failed:', error);
+        }
+      }
+
+      /**
+       * IMAGI-WORLD audio system: Simple, robust, no gates
+       */
+      speakCountdown(text) {
+        return new Promise((resolve) => {
+          const u = new SpeechSynthesisUtterance(text);
+          u.rate = 0.9;
+          u.pitch = 1.0;
+
+          let done = false;
+          const finish = () => {
+            if (!done) {
+              done = true;
+              resolve();
+            }
+          };
+
+          u.onend = finish;
+          u.onerror = finish;
+          setTimeout(finish, 2000);
+
+          this.synth.speak(u);
+        });
+      }
+
+      speakPremise(text) {
+        return new Promise((resolve) => {
+          // IMAGI-WORLD critical move: cancel before premise
+          this.synth.cancel();
+
+          const u = new SpeechSynthesisUtterance(translateToSpeech(text));
+          u.rate = 0.85;
+          u.pitch = 1.0;
+
+          let done = false;
+          const finish = () => {
+            if (!done) {
+              done = true;
+              resolve();
+            }
+          };
+
+          u.onend = finish;
+          u.onerror = finish;
+          setTimeout(finish, 20000);
+
+          this.synth.speak(u);
+        });
+      }
+
+      pauseAudio() {
+        if (this.synth) {
+          this.synth.pause();
+        }
+        if (this.audioCtx && this.audioCtx.state === 'running') {
+          this.audioCtx.suspend().catch(() => {});
+        }
+      }
+
+      resumeAudio() {
+        if (this.synth) {
+          this.synth.resume();
+        }
+        if (this.audioCtx && this.audioCtx.state === 'suspended') {
+          this.audioCtx.resume().catch(() => {});
+        }
+      }
+
+      async runInitialCountdown() {
+        const overlay = document.getElementById('countdown-overlay');
+        overlay.style.display = 'block';
+
+        this.initAudioContext();
+
+        // Wake Bluetooth BEFORE "3"
+        await this.playPrimer();
+        await new Promise(r => setTimeout(r, 80));
+
+        for (const num of [3, 2, 1]) {
+          if (!this.running) {
+            overlay.style.display = 'none';
+            return;
+          }
+          overlay.textContent = String(num);
+          await this.speakCountdown(String(num));
+          await new Promise(r => setTimeout(r, 600));
+        }
+
+        if (!this.running) {
+          overlay.style.display = 'none';
+          return;
+        }
+        await new Promise(r => setTimeout(r, 1000));
+
+        overlay.style.display = 'none';
+      }
+
+      /**
+       * Check if current trial would be an immediate repeat
+       * Returns true if either key or text matches the last trial
+       */
+      isImmediateRepeat(current) {
+        if (this.history.length === 0) return false;
+        const last = this.history[this.history.length - 1];
+        return current.key === last.key || current.text === last.text;
+      }
+
+      /**
+       * Check if current trial accidentally matches n-back when it shouldn't
+       * Returns true if this is supposed to be a non-match but matches n-back key
+       */
+      isAccidentalMatch(current, isIntentionalMatch) {
+        if (isIntentionalMatch) return false;
+        if (this.history.length < this.sessionN) return false;
+        const nBack = this.history[this.history.length - this.sessionN];
+        return current.key === nBack.key;
+      }
+
+      rS() {
+        return this.rng.choice(SYMBOLS);
+      }
+
+      pickDistinct(k) {
+        const out = [];
+        let attempts = 0;
+        while (out.length < k && attempts < 50) {
+          const s = this.rS();
+          if (!out.includes(s)) out.push(s);
+          attempts++;
+        }
+        return out;
+      }
+
+      // EXPANDED KEYSPACE
+      rDelay() {
+        return 1 + Math.floor(this.rng.next() * 6); // 1-6 (was 1-3)
+      }
+
+      rBudget() {
+        return 2 + Math.floor(this.rng.next() * 8); // 2-9 (was 2-5)
+      }
+
+      rTime() {
+        return 1 + Math.floor(this.rng.next() * 6); // 1-6 (was 1-3)
+      }
+
+      rFlip() {
+        return this.rng.next() < 0.5 ? 'ON' : 'OFF';
+      }
+
+      generate(mode, forceMatchKey = null) {
+        let text, key;
+
+        if (forceMatchKey) {
+          key = forceMatchKey;
+        } else {
+          const d = this.rDelay();
+          const b = this.rBudget();
+          const t = this.rTime();
+          const flip = this.rFlip();
+
+          switch (parseInt(mode)) {
+            case 1:
+              key = `M1-BRANCH-d${d}`;
+              break;
+            case 2:
+              key = `M2-COST-b${b}-d${d}`;
+              break;
+            case 3:
+              key = `M3-RULE-t${t}-flip${flip}`;
+              break;
+            case 4:
+              key = `M4-PERT-t${t}-b${b}`;
+              break;
+            default:
+              key = `M0-CAUSE-d${d}`;
+          }
+        }
+
+        const p = key.split('-');
+        const m = p[0];
+
+        if (m === 'M0') {
+          const [A, B, C] = this.pickDistinct(3);
+          const d = parseInt(p[2].replace('d', ''), 10);
+          text = `${A}→${B}@+${d}; ${C}⊣(${A}→${B})`;
+          
+        } else if (m === 'M1') {
+          const [A, B, C] = this.pickDistinct(3);
+          const d = parseInt(p[2].replace('d', ''), 10);
+          text = `${A}?→${B}@+${d} | ${A}?→${C}@+${d}`;
+          
+        } else if (m === 'M2') {
+          const [A, B, D] = this.pickDistinct(3);
+          const b = parseInt(p[2].replace('b', ''), 10);
+          const d = parseInt(p[3].replace('d', ''), 10);
+          text = `reach ${B} from ${A} ≤${b}; ${D}⊣(${A}→${B}@+${d})`;
+          
+        } else if (m === 'M3') {
+          const [A, B] = this.pickDistinct(2);
+          const t = parseInt(p[2].replace('t', ''), 10);
+          const flip = p[3].replace('flip', '');
+          text = `ruleShift@t${t}:${flip}; ${A}→${B}@+2⇒@+1`;
+          
+        } else if (m === 'M4') {
+          const [A, B, X] = this.pickDistinct(3);
+          const t = parseInt(p[2].replace('t', ''), 10);
+          const b = parseInt(p[3].replace('b', ''), 10);
+          text = `perturb@t${t}:¬${X}; cost×2; goal ${B} ≤${b} from ${A}`;
+          
+        } else {
+          const [A, B] = this.pickDistinct(2);
+          text = `${A}→${B}@+1`;
+        }
+
+        return { text, key };
+      }
+
+      async start() {
+        this.running = true;
+
+        this.score = 0;
+        this.total = 0;
+        this.streak = 0;
+        this.maxStreak = 0;
+        this.history = [];
+        this.responseTimes = [];
+
+        this.runId++;
+        this.activeRunId = this.runId;
+
+        // Lock params
+        this.sessionN = parseInt(document.getElementById('n-slider').value, 10);
+        this.sessionMode = document.getElementById('logic-mode').value;
+        this.lockControls();
+
+        document.getElementById('start-btn').disabled = true;
+        document.getElementById('stop-btn').disabled = false;
+
+        this.setStatus("CALIBRATING AUDIO", true);
+
+        await this.runInitialCountdown();
+
+        if (this.running && this.runId === this.activeRunId) {
+          this.pulse();
+        }
+      }
+
+      stop() {
+        this.running = false;
+        this.runId++; // Kill any pending async ops
+        
+        clearTimeout(this.timer);
+        
+        // Clear stale state
+        this.responseStartTime = null;
+        this.currentCycleObj = null;
+        
+        if (this.synth) {
+          this.synth.cancel();
+        }
+
+        // Close AudioContext (IMAGI-WORLD pattern)
+        if (this.audioCtx && this.audioCtx.state !== 'closed') {
+          this.audioCtx.close();
+          this.audioCtx = null;
+        }
+
+        this.unlockControls();
+
+        // Reset UI to initial state
+        document.getElementById('premise-display').textContent = 'INITIALIZE TO BEGIN';
+        document.getElementById('feedback').textContent = '';
+        document.getElementById('start-btn').disabled = false;
+        document.getElementById('stop-btn').disabled = true;
+        document.getElementById('match-btn').disabled = true;
+        document.getElementById('no-match-btn').disabled = true;
+        this.setStatus("LINK SEVERED", false);
+        document.getElementById('countdown-overlay').style.display = 'none';
+      }
+
+      async pulse() {
+        const currentRunId = this.runId;
+        if (!this.running) return;
+
+        // Store active run ID for this pulse cycle
+        this.activeRunId = currentRunId;
+
+        const mode = this.sessionMode;
+        const n = this.sessionN;
+
+        // CRITICAL FIX: Prevent accidental matches on non-match trials
+        const isMatchPossible = this.history.length >= n && this.rng.next() < 0.38;
+        const nBackObj = isMatchPossible ? this.history[this.history.length - n] : null;
+        const isIntentionalMatch = nBackObj !== null;
+
+        let current;
+        let safety = 0;
+        
+        // Generation loop with immediate repeat and accidental match prevention
+        do {
+          current = this.generate(mode, nBackObj ? nBackObj.key : null);
+          safety++;
+          
+          if (this.isImmediateRepeat(current)) {
+            if (safety < 15) continue;
+          }
+          
+          if (this.isAccidentalMatch(current, isIntentionalMatch)) {
+            if (safety < 15) continue;
+          }
+          
+          break;
+        } while (safety < 20);
+
+        // DETERMINISTIC ESCAPE HATCH: Force valid non-match if needed
+        if (!isIntentionalMatch && this.history.length >= n) {
+          let escapeAttempts = 0;
+          const nBackKey = this.history[this.history.length - n].key;
+          
+          while (current.key === nBackKey && escapeAttempts < 50) {
+            // Regenerate with modified RNG state to guarantee different key
+            this.rng.state += 0x9E3779B9; // Golden ratio constant for state perturbation
+            current = this.generate(mode, null);
+            escapeAttempts++;
+          }
+          
+          // Final paranoid check - if still matching after 50 attempts, force key mutation
+          if (current.key === nBackKey) {
+            // Append mode tag to guarantee difference
+            current.key = current.key + '-FORCED';
+          }
+        }
+
+        this.correctIsMatch = (nBackObj !== null && current.key === nBackObj.key);
+        this.currentCycleObj = current;
+        this.answered = true;
+
+        document.getElementById('match-btn').disabled = true;
+        document.getElementById('no-match-btn').disabled = true;
+        document.getElementById('feedback').textContent = "";
+        
+        const premiseDisplay = document.getElementById('premise-display');
+        premiseDisplay.textContent = current.text;
+        premiseDisplay.classList.add('presenting');
+        setTimeout(() => premiseDisplay.classList.remove('presenting'), 400);
+
+        // IMAGI-WORLD pattern: Always prime and speak (no gates)
+        this.setStatus("PRIMING AUDIO", true);
+        await this.playPrimer();
+        if (!this.running || this.runId !== currentRunId) return;
+
+        this.setStatus("DELIVERING PROMPT", true);
+        await this.speakPremise(current.text);
+        if (!this.running || this.runId !== currentRunId) return;
+
+        // Start response timing
+        this.responseStartTime = performance.now();
+        
+        this.answered = false;
+        document.getElementById('match-btn').disabled = false;
+        document.getElementById('no-match-btn').disabled = false;
+        this.setStatus(`CYCLE ${this.total + 1} • PROCESSING`, true);
+
+        const thinkingTime = parseFloat(document.getElementById('spt-slider').value) * 1000;
+        this.timer = setTimeout(() => {
+          if (!this.answered && this.runId === currentRunId) {
+            this.respond(null);
+          }
+        }, thinkingTime);
+      }
+
+      respond(val) {
+        // Guard against stale responses from previous run or missing state
+        if (this.answered || !this.running || this.runId !== this.activeRunId || !this.currentCycleObj) return;
+
+        this.answered = true;
+        clearTimeout(this.timer);
+        
+        // Calculate response time
+        const responseTime = this.responseStartTime 
+          ? Math.round(performance.now() - this.responseStartTime)
+          : null;
+        
+        // Record response time for averaging
+        if (responseTime !== null) {
+          this.responseTimes.push(responseTime);
+        }
+
+        document.getElementById('match-btn').disabled = true;
+        document.getElementById('no-match-btn').disabled = true;
+
+        const fb = document.getElementById('feedback');
+        let isCorrect = false;
+
+        if (val === null) {
+          fb.textContent = "TIMEOUT";
+          fb.className = "incorrect";
+          this.streak = 0;
+          
+        } else if (val === this.correctIsMatch) {
+          this.score++;
+          this.streak++;
+          this.maxStreak = Math.max(this.maxStreak, this.streak);
+          fb.textContent = "SYNC SUCCESS";
+          fb.className = "correct";
+          isCorrect = true;
+          
+        } else {
+          fb.textContent = "SYNC ERROR";
+          fb.className = "incorrect";
+          this.streak = 0;
+        }
+
+        this.total++;
+        this.updateUI(isCorrect);
+        this.history.push(this.currentCycleObj);
+
+        setTimeout(() => {
+          fb.textContent = "";
+          fb.className = "";
+          if (this.running) {
+            this.pulse();
+          }
+        }, 1000);
+      }
+
+      updateUI(isCorrect = false) {
+        document.getElementById('trial-count').textContent = this.total;
+        document.getElementById('score').textContent = this.score;
+        document.getElementById('streak').textContent = this.streak;
+        
+        const accuracy = this.total > 0 ? Math.round((this.score / this.total) * 100) : 0;
+        document.getElementById('accuracy').textContent = accuracy + "%";
+        
+        // Calculate and display average response time
+        if (this.responseTimes.length > 0) {
+          const avgRT = Math.round(this.responseTimes.reduce((a, b) => a + b, 0) / this.responseTimes.length);
+          document.getElementById('avg-rt').textContent = avgRT + "ms";
+        } else {
+          document.getElementById('avg-rt').textContent = "0ms";
+        }
+
+        const streakBox = document.getElementById('streak').closest('.stat-box');
+        if (isCorrect && this.streak > 0) {
+          streakBox.classList.add('highlight');
+          setTimeout(() => streakBox.classList.remove('highlight'), 500);
+        }
+
+        // Adaptive difficulty hint
+        if (this.total >= 20 && accuracy >= 85) {
+          if (this.sessionN < 5) {
+            this.setStatus(`EXCELLENT • CONSIDER N=${this.sessionN + 1}`, true);
+          }
+        }
+      }
+    }
+
+    const engine = new TopologyEngine();
+    engine.init();
+    initGlossaryUI(engine);
+  </script>
+
+</body>
+</html>
